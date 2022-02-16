@@ -1,0 +1,135 @@
+---
+title: "Time Series Analysis"
+author: "IO"
+date: "09 02 2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, message = F)
+library(xts)
+library(dplyr)
+library(weatherData)
+library(ggplot2)
+```
+
+## Dataset
+
+```{r}
+print(Nile)
+nile <- as.xts(Nile)
+head(nile)
+```
+
+```{r}
+plot(Nile, 
+     xlab = "Year",
+     ylab = "River Volume (1e9 m^{3})",
+     main = "Annual River Nile Volume at Aswan, 1871-1970",
+     type = "s")
+```
+
+```{r}
+is.ts(nile)
+is.xts(nile)
+start(nile)     #starting date of the observations
+frequency(nile) #how many observations each day
+end(nile)       #last date of observations
+deltat(nile)    #time interval between observations in days (how many observations in a day)
+```
+
+## London weather data form 2013
+
+We should tranform the data into an xts object
+
+```{r}
+is.ts(London2013)
+london <- as.xts(x = London2013$Temperature,
+       order.by = lubridate::as_datetime(London2013$Time))
+
+periodicity(london)
+```
+
+```{r}
+plot(london)
+```
+
+```{r}
+plot(london["201301/201303"])
+plot(xts::first(london, "3 months"))
+```
+
+Differences between every 10 observation
+
+```{r}
+head(
+  merge(london,
+        diff(london, 
+             lag = 10)),
+  20
+)
+```
+
+Mean Temp of every month
+
+```{r}
+plot(apply.monthly(london,
+              FUN = "mean"),
+     type = "s",
+     main = "month")
+```
+
+OHLC Values
+
+```{r}
+to.period(london,
+          period = "months")
+```
+
+## ARIMA models
+
+ARIMA: AutoRegressive, Integrated Moving Average
+
+We can use ARIMA models to specify white noise (WN) models.
+
+```{r}
+# Stimulate a WN model with 50 obervations
+WN <- arima.sim(model = list(order = c(0,0,0)),
+                n = 50)
+# This series has a default value of mean and sd, with are 0 and 1
+head(WN)
+
+ts.plot(WN)
+```
+
+```{r}
+# Set the mean and sd of a stimulated WN model
+WN_1 <- arima.sim(model = list(order =  c(0,   #Autoregressive order
+                                          0,   #Order of integration (differencing)
+                                          0)), #Moving average order
+                  n = 50,
+                  mean = 4,
+                  sd = 2)
+
+head(WN_1)
+
+# We can see this plot has a bigger mean and more variation
+ts.plot(WN_1)
+```
+
+### Estimating the white noise in a time series
+
+```{r}
+arima(WN_1, 
+      order = c(0,0,0))
+```
+
+The value that is given as the blank row in under intercept is mean.  
+s.e. is the strandard error.  
+sigma^2 is indicating the variance in the model. The estimated standard deviation is the square root of this value.
+
+```{r}
+mean(WN_1)
+var(WN_1)
+```
+
