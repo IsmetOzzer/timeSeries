@@ -1,12 +1,9 @@
 ---
 title: "Introducing xts and zoo objects"
 output:
-  pdf_document: 
-    latex_engine: xelatex
+  github_document:
     toc: true
     toc_depth: 5
-  html_document:
-    df_print: paged
 ---
 
 ```{r}

@@ -2,7 +2,10 @@
 title: "Time Series Analysis"
 author: "IO"
 date: "09 02 2022"
-output: github_document
+output: 
+  github_document:
+    toc: true
+    toc_depth: 5
 ---
 
 ```{r setup, include=FALSE}
