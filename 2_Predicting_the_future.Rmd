@@ -1,0 +1,222 @@
+---
+title: "2_Predicting_the_future"
+author: "IO"
+date: "4/19/2022"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(weatherData)
+library(dplyr)
+library(xts)
+```
+
+## Removing trends in variability via the logarithmic transformation
+
+![The exponentially growing graph that we are getting the log() of](2_Predicting_the_future_insertimage_1.png){width=50%}
+ 
+![After we take the log(), the relationship becomes more linear](2_Predicting_the_future_insertimage_2.png){width=50%}
+
+## Removing trends in level by differencing
+
+Differencing with the `diff()` function can give us the increments in trends over time or any type of change in a time series. 
+
+```{r}
+london <- as.xts(x = London2013$Temperature,
+                 order.by = lubridate::as_datetime(London2013$Time)) 
+
+periodicity(london)
+```
+
+`diff()` as a default gives 1 lag (differences between 1 observations)
+
+```{r}
+head(diff(london))
+```
+
+## Removing seasonal trends with seasonal differencing
+
+Sometimes we are not interested in the seasonal fluctuations in the data but interested in the yearly changes overall. In such cases, we can get the differences with the lag of 12 in a montly dataset (substracting each month's value from the next year's month value) and 4 in a quarterly dataset.  
+
+Original monthly driver deaths
+
+```{r}
+MASS::drivers |> 
+  as.xts() |> 
+  ts.plot()
+```
+
+Drivers death data with a lag of 12 (same montly data has been substracted by each year)
+
+```{r}
+MASS::drivers |> 
+  as.xts() |> 
+  diff(lag = 12) |> 
+  ts.plot()
+```
+
+## The white noise (WN) model
+
+Simplest example of a stationary process with no clear pattern or a trend over time. A weak white noise process has:
+
+* A fixed, constant mean
+* A fixed, constant variance
+* No correlation over time
+
+![(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model ](2_Predicting_the_future_insertimage_3.png){width=50%}
+
+ARIMA: AutoRegressive, Integrated Moving Average
+
+We can use ARIMA models to specify white noise (WN) models.
+
+```{r}
+# Stimulate a WN model with 50 obervations
+WN <- arima.sim(model = list(order = c(0,0,0)),
+                n = 50)
+# This series has a default value of mean 0 and sd 1
+head(WN)
+ts.plot(WN)
+```
+
+```{r}
+# Set the mean and sd of a stimulated WN model
+WN_1 <- arima.sim(model = list(order =  c(0,   #Autoregressive order
+                                          0,   #Order of integration (differencing)
+                                          0)), #Moving average order
+                  n = 50,
+                  mean = 4,
+                  sd = 2)
+
+ts.plot(WN_1)
+```
+
+### Estimating the white noise in a time series
+
+```{r}
+arima(WN_1, 
+      order = c(0,0,0))
+
+mean(WN_1)
+
+var(WN_1)
+```
+
+## The random walk (RW) model
+
+A basic time series model and a simple example of an unstable (non-stationary) process. They are the cumulative sum (1st obs, 1st + 2nd obs, 1st + 2nd + 3rd obs, ...) of a mean zero white noise series. Therefore, first difference (lag 1) gives a WN model. Also, RW models are ARIMA(0,1,0) models, which 1 indicates the integration is 1. It has:
+
+* No specified mean or variance
+* Exhibits strong dependence over time (each observation is strongly related to its immediate neighbors)
+* Its changes or increments are (similar to) white noise, which means the change is stable/stationary 
+
+Some RW time series plots:
+
+![](2_Predicting_the_future_insertimage_4.png){width=50%}
+
+RW recursion:  
+Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
+
+The error (Noise of Et) means zero white noise. The variance of this WN variance of error is the only parameter of RW.
+
+First difference (lag 1) series:  
+Yt - Yt-1 = Et (which is diff(Y), which in itself is a WN series)
+
+![Y is a RW series while diff(Y) becomes a WN series](2_Predicting_the_future_insertimage_5.png){width=50%}
+
+Random walk with a drift (with a constant of drift, which drifts/trends the values upwards or downwards over time):  
+Today = Constant (c, which works as the slope in the graph) + Yesterday + Noise. This type of RW model increases its parameter size to 2, with a constant c and a WN variance Et. This is because if you are getting the cumulative sum of a data with a mean of 0, the data is scattered around + and - values (the values are dependent on the variance) and therefore summing the values results in a somewhat stale model, whereas if the mean is like 5, since the values are (mostly positive) the trend drifts upward and if the mean is -5, the trend drifts downwards.  
+
+The first difference (lag 1) of a RW with a drift is Yt - Yt-1 = WN series (process) with a mean as the c of the constant (i.e., constant + noise in a WN model). In another words, unwinds the cumulative sum to get the actual data/model. Therefore, if we create a WN process with a mean other than 0 and then get its cumulative sum (`cumsum()`), we get a RW process/model.
+
+Some RW with a drift plots:
+
+![(a) with a drift constant of 0, which is no drift, (b) positive drift coefficient/constant therefore a trend up, (c) negative drift coefficient/constant, therefore a trend down, (d) larger positive coefficient with a steeper upward trend. ](2_Predicting_the_future_insertimage_6.png){width=50%}
+
+### Stimulating a random walk model
+
+```{r}
+RW <- arima.sim(model = list(order = c(0,    #Autoregressive order
+                                       1,    #Order of integration (differencing)
+                                       0)),  #Moving average order
+                n = 100)                     #100 observations
+
+ts.plot(RW)
+```
+
+```{r}
+RW_diff <- diff(RW)
+
+plot(RW_diff)
+```
+
+### Stimulating a random walk model with a drift
+
+```{r}
+RW_drift <- arima.sim(model = list(order = c(0,
+                                             1,
+                                             0)),
+                      n = 100,
+                      mean = .5)
+
+plot(RW_drift)
+```
+
+```{r}
+RW_drift_diff <- diff(RW_diff)
+
+ts.plot(RW_drift_diff)
+```
+
+## Stationary processes
+
+Stationary processes have distributional inveriance (stability) over time. For observed time series, fluctuations appear random and these random fluctuations behave similarly from one time period to the next. For example, stocks or returns from interests have different behavior from the previous year but their mean, sd, or other statistics are somewhat similar from one year to the next.
+
+* Weak stationarity: Mean, variance, covariance are constant over time.
+  + Mean and variance Yt is the same (constant) for all times (t).
+  + Covariance of Y at the time t (Yt) and Ys is constant for all t - s = h, meaning the covariance between these times depend on how close these two time points are.
+    - Cov(Y2, Y5) = Cov(Y7, Y10)
+
+Stationary models (the process) can be modeled with relatively fewer parameters; there is no need for a different mean for the observation at the time t (Yt), all times have a common mean which is the mean of the sample. 
+
+Many financial time series do not exhibit stationarity but the changes in the series are often approximately stationary (constant). A stationary series should show some oscillation around some fixed level (mean), which is called *mean-reversion*. For example, the inflation rates do not naturally come down to a specific level due to being controlled by the monitary policy. But the changes in inflation rates show a clear mean-reversion to the mean of 0, as policies increase the rate at times and decrease at others. 
+
+![(top) Inflation rates, (bottom) changes in inflation rates](2_Predicting_the_future_insertimage_7.png){width=50%}
+
+There are many commonly encountered departures (deviances) from stationarity, including time trends, periodicity, and a lack of mean reversion.
+
+![A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend](2_Predicting_the_future_insertimage_8.png)
+
+WN models are stationary but the RW models are always non-stationary, both with and without a drift.
+
+```{r}
+#Basic WN model
+WN <- arima.sim(model = list(order = c(0,
+                                       0,
+                                       0)),
+                n = 100)
+
+#Basic RW model
+RW <- cumsum(WN)
+
+
+#WN model with a drift (mean other than 0)
+WN_drift <- arima.sim(model = list(order = c(0,
+                                             0,
+                                             0)),
+                      n = 100,
+                      mean = 0.4)
+
+#Get the cumsum of the WN model with a drift
+RW_drift <- cumsum(WN_drift)
+```
+
+Plotting the models comparatively
+
+```{r}
+plot.ts(cbind(WN, RW, WN_drift, RW_drift))
+```
+
