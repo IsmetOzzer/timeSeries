@@ -99,7 +99,7 @@ trend over time. A weak white noise process has:
 -   No correlation over time
 
 <figure>
-<img src="2_Predicting_the_future_insertimage_3.png" style="width:50.0%" alt="(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model" /><figcaption aria-hidden="true">(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model</figcaption>
+<img src="2_Predicting_the_future_insertimage_3.png" style="width:40.0%" alt="(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model" /><figcaption aria-hidden="true">(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model</figcaption>
 </figure>
 
 ARIMA: AutoRegressive, Integrated Moving Average
@@ -114,7 +114,7 @@ WN <- arima.sim(model = list(order = c(0,0,0)),
 head(WN)
 ```
 
-    ## [1] -1.9412356  0.6526015  0.9329491  1.8613888  0.4544407 -0.5572012
+    ## [1]  0.2729796  0.1782963 -0.3193429 -1.0945342 -0.6523409  0.2817019
 
 ``` r
 ts.plot(WN)
@@ -149,22 +149,22 @@ arima(WN_1,
     ## 
     ## Coefficients:
     ##       intercept
-    ##          4.0898
-    ## s.e.     0.3109
+    ##          4.0207
+    ## s.e.     0.2938
     ## 
-    ## sigma^2 estimated as 4.834:  log likelihood = -110.34,  aic = 224.67
+    ## sigma^2 estimated as 4.317:  log likelihood = -107.51,  aic = 219.02
 
 ``` r
 mean(WN_1)
 ```
 
-    ## [1] 4.089808
+    ## [1] 4.020735
 
 ``` r
 var(WN_1)
 ```
 
-    ## [1] 4.932188
+    ## [1] 4.405029
 
 ## The random walk (RW) model
 
@@ -182,7 +182,7 @@ are ARIMA(0,1,0) models, which 1 indicates the integration is 1. It has:
 
 Some RW time series plots:
 
-<img src="2_Predicting_the_future_insertimage_4.png" style="width:50.0%" />
+<img src="2_Predicting_the_future_insertimage_4.png" style="width:60.0%" />
 
 RW recursion:  
 Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
@@ -303,9 +303,9 @@ There are many commonly encountered departures (deviances) from
 stationarity, including time trends, periodicity, and a lack of mean
 reversion.
 
-![A shows periodicity, B shows mean-reverting (oscillating around a
-mean), C shows an upward
-trend](2_Predicting_the_future_insertimage_8.png)
+<figure>
+<img src="2_Predicting_the_future_insertimage_8.png" style="width:50.0%" alt="A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend" /><figcaption aria-hidden="true">A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend</figcaption>
+</figure>
 
 WN models are stationary but the RW models are always non-stationary,
 both with and without a drift.

@@ -67,7 +67,7 @@ Simplest example of a stationary process with no clear pattern or a trend over t
 * A fixed, constant variance
 * No correlation over time
 
-![(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model ](2_Predicting_the_future_insertimage_3.png){width=50%}
+![(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model ](2_Predicting_the_future_insertimage_3.png){width=40%}
 
 ARIMA: AutoRegressive, Integrated Moving Average
 
@@ -115,7 +115,7 @@ A basic time series model and a simple example of an unstable (non-stationary) p
 
 Some RW time series plots:
 
-![](2_Predicting_the_future_insertimage_4.png){width=50%}
+![](2_Predicting_the_future_insertimage_4.png){width=60%}
 
 RW recursion:  
 Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
@@ -188,7 +188,7 @@ Many financial time series do not exhibit stationarity but the changes in the se
 
 There are many commonly encountered departures (deviances) from stationarity, including time trends, periodicity, and a lack of mean reversion.
 
-![A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend](2_Predicting_the_future_insertimage_8.png)
+![A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend](2_Predicting_the_future_insertimage_8.png){width=50%}
 
 WN models are stationary but the RW models are always non-stationary, both with and without a drift.
 
