@@ -67,9 +67,10 @@ Simplest example of a stationary process with no clear pattern or a trend over t
 * A fixed, constant variance
 * No correlation over time
 
-![(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model ](2_Predicting_the_future_insertimage_3.png){width=40%}
+![(a) has a upward trend, (b) has a seasonality effect, (c) more variance at the later observations, (d) no trend, a constant variance, and no correlation over time, so a WN model ](2_Predicting_the_future_insertimage_3.png){width=40%}  
 
-ARIMA: AutoRegressive, Integrated Moving Average
+
+## ARIMA: AutoRegressive, Integrated Moving Average
 
 We can use ARIMA models to specify white noise (WN) models.
 
@@ -107,10 +108,10 @@ var(WN_1)
 
 ## The random walk (RW) model
 
-A basic time series model and a simple example of an unstable (non-stationary) process. They are the cumulative sum (1st obs, 1st + 2nd obs, 1st + 2nd + 3rd obs, ...) of a mean zero white noise series. Therefore, first difference (lag 1) gives a WN model. Also, RW models are ARIMA(0,1,0) models, which 1 indicates the integration is 1. It has:
+A basic time series model and a simple example of an unstable (non-stationary) process. They are the cumulative sum (1st obs, 1st + 2nd obs, 1st + 2nd + 3rd obs, ...) of a mean zero white noise series. Therefore, first difference (lag 1) gives a WN model. Also, RW models are ARIMA(0,1,0) models, which 1 indicates the integration is 1. The have:
 
 * No specified mean or variance
-* Exhibits strong dependence over time (each observation is strongly related to its immediate neighbors)
+* Exhibit strong dependence over time (each observation is strongly related to its immediate neighbors)
 * Its changes or increments are (similar to) white noise, which means the change is stable/stationary 
 
 Some RW time series plots:
@@ -118,21 +119,26 @@ Some RW time series plots:
 ![](2_Predicting_the_future_insertimage_4.png){width=60%}
 
 RW recursion:  
-Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
 
-The error (Noise of Et) means zero white noise. The variance of this WN variance of error is the only parameter of RW.
+> Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
 
-First difference (lag 1) series:  
-Yt - Yt-1 = Et (which is diff(Y), which in itself is a WN series)
+The error (Et as noise) means zero white noise. This variance in the WN model's error is the only parameter of RW.
 
-![Y is a RW series while diff(Y) becomes a WN series](2_Predicting_the_future_insertimage_5.png){width=50%}
+First difference (lag 1) series logically becomes:
 
-Random walk with a drift (with a constant of drift, which drifts/trends the values upwards or downwards over time):  
-Today = Constant (c, which works as the slope in the graph) + Yesterday + Noise. This type of RW model increases its parameter size to 2, with a constant c and a WN variance Et. This is because if you are getting the cumulative sum of a data with a mean of 0, the data is scattered around + and - values (the values are dependent on the variance) and therefore summing the values results in a somewhat stale model, whereas if the mean is like 5, since the values are (mostly positive) the trend drifts upward and if the mean is -5, the trend drifts downwards.  
+> Et = Yt - Yt-1 (equals to diff(Y), which in itself unwinds to a WN series)
 
-The first difference (lag 1) of a RW with a drift is Yt - Yt-1 = WN series (process) with a mean as the c of the constant (i.e., constant + noise in a WN model). In another words, unwinds the cumulative sum to get the actual data/model. Therefore, if we create a WN process with a mean other than 0 and then get its cumulative sum (`cumsum()`), we get a RW process/model.
+![Y is a RW series while diff(Y) becomes a WN series](2_Predicting_the_future_insertimage_5.png){width=50%}  
 
-Some RW with a drift plots:
+## Random walk with a drift 
+
+RW models with a constant of drift, which means a drifting or trending of values upwards or downwards over time.  
+
+> Today = Yesterday + Noise + Constant (c, which works as the slope in the graph)   
+
+This type of RW model increases its parameter size to 2, with a constant c and a WN variance Et. This is because if you are getting the cumulative sum of a data with a mean of 0, the data is scattered around positive and negative values (depending on the variance) and therefore summing the values results in a somewhat stale model. Whereas if the mean is like 5, since the values will mostly be positive, the trend drifts upward and if the mean is -5, the trend drifts downwards.  
+
+The first difference (lag 1) of a RW with a drift is Yt - Yt-1 = WN series (process) with a mean as the c of the constant (i.e., constant + noise in a WN model). In another words, unwinding the cumulative sum from the RW model gets the core data/model of WN. Therefore, if we create a WN process with a mean other than 0 and then get its cumulative sum, we get a RW process/model.
 
 ![(a) with a drift constant of 0, which is no drift, (b) positive drift coefficient/constant therefore a trend up, (c) negative drift coefficient/constant, therefore a trend down, (d) larger positive coefficient with a steeper upward trend. ](2_Predicting_the_future_insertimage_6.png){width=50%}
 
@@ -177,18 +183,20 @@ Stationary processes have distributional inveriance (stability) over time. For o
 
 * Weak stationarity: Mean, variance, covariance are constant over time.
   + Mean and variance Yt is the same (constant) for all times (t).
-  + Covariance of Y at the time t (Yt) and Ys is constant for all t - s = h, meaning the covariance between these times depend on how close these two time points are.
+  + Covariance of Y at the time t (Yt) and Ys is constant for all times as t - s = h, meaning the covariance between these times depend on how close these two time points are.
     - Cov(Y2, Y5) = Cov(Y7, Y10)
 
-Stationary models (the process) can be modeled with relatively fewer parameters; there is no need for a different mean for the observation at the time t (Yt), all times have a common mean which is the mean of the sample. 
+Stationary models (aka processes) can be modeled with relatively fewer parameters; there is no need for a different mean for the observation at the time t (Yt), all times have a common mean which is the mean of the sample. 
 
-Many financial time series do not exhibit stationarity but the changes in the series are often approximately stationary (constant). A stationary series should show some oscillation around some fixed level (mean), which is called *mean-reversion*. For example, the inflation rates do not naturally come down to a specific level due to being controlled by the monitary policy. But the changes in inflation rates show a clear mean-reversion to the mean of 0, as policies increase the rate at times and decrease at others. 
+Many financial time series do not exhibit stationarity but the changes in the series are often approximately stationary (constant), meaning the change is relatively the same throughout time.  
 
-![(top) Inflation rates, (bottom) changes in inflation rates](2_Predicting_the_future_insertimage_7.png){width=50%}
+A stationary series showS some oscillation around some fixed level (mean), which is called *mean-reversion*. For example, the inflation rates do not naturally come down to a specific level due to being controlled by monetary policies. But the changes in inflation rates show a clear mean-reversion to the mean of 0, as policies increase the rate at times and decrease at others. 
+
+![(top) Inflation rates, (bottom) changes in inflation rates](2_Predicting_the_future_insertimage_7.png){width=50%}  
 
 There are many commonly encountered departures (deviances) from stationarity, including time trends, periodicity, and a lack of mean reversion.
 
-![A shows periodicity, B shows mean-reverting (oscillating around a mean), C shows an upward trend](2_Predicting_the_future_insertimage_8.png){width=50%}
+![(A) periodicity, (B) mean-reverting by oscillating around a mean, (C) an upward trend](2_Predicting_the_future_insertimage_8.png){width=65%}  
 
 WN models are stationary but the RW models are always non-stationary, both with and without a drift.
 
