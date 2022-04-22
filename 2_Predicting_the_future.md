@@ -46,7 +46,8 @@ periodicity(london)
 
     ## 30 minute periodicity from 2013-01-01 00:20:00 to 2013-12-31 23:50:00
 
-`diff()` as a default gives 1 lag (differences between 1 observations)
+`diff()` as a default gives 1 lag (differences between the subsequent 2
+observations)
 
 ``` r
 head(diff(london))
@@ -80,8 +81,8 @@ MASS::drivers |>
 
 ![](2_Predicting_the_future_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-Drivers death data with a lag of 12 (same montly data has been
-substracted by each year)
+Drivers death data with a lag of 12 (same monthly data has been
+subtracted by each year)
 
 ``` r
 MASS::drivers |> 
@@ -107,17 +108,31 @@ trend over time. A weak white noise process has:
 
 ## ARIMA: AutoRegressive, Integrated Moving Average
 
+ARIMA models are a type of time-series regression model which make
+predictions on the future values based on past values.
+
+-   AutoRegression (AR): Automatically (always) regressing on the
+    previous (lagged) values to make predictions.
+-   Integrated (I): The lag process in which a chosen previous value is
+    subtracted from the most recent one and, thus, the data values are
+    replaced by these differences.
+-   Moving average (MA): incorporates the dependency between an
+    observation and a residual error from a moving average model applied
+    to lagged observations.
+
 We can use ARIMA models to specify white noise (WN) models.
 
 ``` r
 # Stimulate a WN model with 50 obervations
-WN <- arima.sim(model = list(order = c(0,0,0)),
+WN <- arima.sim(model = list(order = c(0,    #Autoregressive order
+                                       0,    #Order of integration (differencing)
+                                       0)),  #Moving average order
                 n = 50)
 # This series has a default value of mean 0 and sd 1
 head(WN)
 ```
 
-    ## [1]  3.0138939  0.9501910  0.1768304  0.1253117  0.9704058 -0.1462269
+    ## [1]  1.3191821  0.7914141 -0.8493230  0.4557396  0.1707063 -0.9372356
 
 ``` r
 ts.plot(WN)
@@ -152,22 +167,22 @@ arima(WN_1,
     ## 
     ## Coefficients:
     ##       intercept
-    ##          3.3978
-    ## s.e.     0.2365
+    ##          4.1488
+    ## s.e.     0.2643
     ## 
-    ## sigma^2 estimated as 2.796:  log likelihood = -96.65,  aic = 197.3
+    ## sigma^2 estimated as 3.492:  log likelihood = -102.21,  aic = 208.42
 
 ``` r
 mean(WN_1)
 ```
 
-    ## [1] 3.397843
+    ## [1] 4.148846
 
 ``` r
 var(WN_1)
 ```
 
-    ## [1] 2.852602
+    ## [1] 3.563352
 
 ## The random walk (RW) model
 
@@ -192,8 +207,8 @@ RW recursion:
 
 > Today (Yt) = Yesterday (Yt - 1) + Noise (Et)
 
-The error (Et as noise) means zero white noise. This variance in the WN
-model’s error is the only parameter of RW.
+The error (Et as noise) is a means zero white noise. This variance in
+the WN model’s error is the only parameter of RW.
 
 First difference (lag 1) series logically becomes:
 
@@ -216,16 +231,17 @@ This type of RW model increases its parameter size to 2, with a constant
 c and a WN variance Et. This is because if you are getting the
 cumulative sum of a data with a mean of 0, the data is scattered around
 positive and negative values (depending on the variance) and therefore
-summing the values results in a somewhat stale model. Whereas if the
-mean is like 5, since the values will mostly be positive, the trend
-drifts upward and if the mean is -5, the trend drifts downwards.
+summing the values results in a somewhat stale/stable model. Whereas if
+the mean is like 5, since the values will mostly be positive, the
+cumulative sum drifts the trend upward and if the mean is -5, the trend
+drifts downwards.
 
 The first difference (lag 1) of a RW with a drift is Yt - Yt-1 = WN
 series (process) with a mean as the c of the constant (i.e., constant +
 noise in a WN model). In another words, unwinding the cumulative sum
-from the RW model gets the core data/model of WN. Therefore, if we
-create a WN process with a mean other than 0 and then get its cumulative
-sum, we get a RW process/model.
+from the RW model gets the core data/model of WN with a mean different
+from 0. Therefore, if we create a WN process with a mean other than 0
+and then get its cumulative sum, we get a RW process/model.
 
 <figure>
 <img src="2_Predicting_the_future_insertimage_6.png" style="width:50.0%" alt="(a) with a drift constant of 0, which is no drift, (b) positive drift coefficient/constant therefore a trend up, (c) negative drift coefficient/constant, therefore a trend down, (d) larger positive coefficient with a steeper upward trend." /><figcaption aria-hidden="true">(a) with a drift constant of 0, which is no drift, (b) positive drift coefficient/constant therefore a trend up, (c) negative drift coefficient/constant, therefore a trend down, (d) larger positive coefficient with a steeper upward trend.</figcaption>
@@ -276,7 +292,7 @@ ts.plot(RW_drift_diff)
 
 ## Stationary processes
 
-Stationary processes have distributional inveriance (stability) over
+Stationary processes have distributional invariance (stability) over
 time. For observed time series, fluctuations appear random and these
 random fluctuations behave similarly from one time period to the next.
 For example, stocks or returns from interests have different behavior
@@ -291,16 +307,16 @@ somewhat similar from one year to the next.
         depend on how close these two time points are.
         -   Cov(Y2, Y5) = Cov(Y7, Y10)
 
-Stationary models (aka processes) can be modeled with relatively fewer
-parameters; there is no need for a different mean for the observation at
-the time t (Yt), all times have a common mean which is the mean of the
-sample.
+Stationary models/processes can be modeled with relatively fewer
+parameters; there is no need for a different mean for the observations
+at different times t (Yt); all times have a common mean which is the
+mean of the all sample.
 
 Many financial time series do not exhibit stationarity but the changes
 in the series are often approximately stationary (constant), meaning the
 change is relatively the same throughout time.
 
-A stationary series showS some oscillation around some fixed level
+A stationary series shows some oscillation around some fixed level
 (mean), which is called *mean-reversion*. For example, the inflation
 rates do not naturally come down to a specific level due to being
 controlled by monetary policies. But the changes in inflation rates show

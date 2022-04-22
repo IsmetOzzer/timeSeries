@@ -5,7 +5,6 @@ IO
 
 -   [Correlation analysis and the autocorrelation
     function](#correlation-analysis-and-the-autocorrelation-function)
-    -   [Scatterplots](#scatterplots)
     -   [Covariance and correlation](#covariance-and-correlation)
     -   [Autocorrelation](#autocorrelation)
 -   [Autoregression](#autoregression)
@@ -18,17 +17,6 @@ IO
         forecasting](#ar-model-estimation-and-forecasting)
 
 # Correlation analysis and the autocorrelation function
-
-## Scatterplots
-
-<img src="3_Correlation%20analysis%20and%20the%20autocorrelation%20function_insertimage_1.png" style="width:50.0%" />
-
-Instead of doing a time plot, we can compare the price values lets say
-two stocks in a scatter plot by stock A on the y axis and stock B on the
-x axis. This allows us to evaluate the relationship between these stock
-price.
-
-<img src="3_Correlation%20analysis%20and%20the%20autocorrelation%20function_insertimage_2.png" style="width:50.0%" />
 
 Financial asset returns: Channges in price as a fraction of the initial
 price over a given time (e.g., a week)
@@ -72,7 +60,7 @@ colMeans(returns)
     ## 0.0007052174 0.0008609470 0.0004979471 0.0004637479
 
 ``` r
-apply(returns, #apply in the data
+apply(returns,        #apply in the data
       MARGIN = 2,     #in columns (1 would be rows)
       FUN = var)      #the var function (variance)
 ```
@@ -130,10 +118,9 @@ pairs(diff(log(EuStockMarkets)),
 
 **Covariance** means to what degree two variables sync their movement
 (e.g., increase or decrease) in the values. For time series analysis,
-this syncronization is investigated at certain time points while for
-behavior, it is investigated by enough number of people showing eleveted
-scores for an attribute. The covariance coefficient depends on the scale
-of the variables (i.e., how big or small the values are).
+this syncronization is investigated at certain time points. The
+covariance coefficient depends on the scale of the variables (i.e., how
+big or small the values are).
 
 **Correlation** is a standardized version of covariance which does not
 depend on the scale of the measurements in the variables.
@@ -141,7 +128,7 @@ depend on the scale of the measurements in the variables.
 > Correlation = cov(stock\_A, stock\_B) / (sd(stock\_A) \* sd(stock\_B))
 
 <figure>
-<img src="3_Correlation%20analysis%20and%20the%20autocorrelation%20function_insertimage_3.png" style="width:50.0%" alt="Covariance can be seen better with a combined time plot while correlation with a scatterplot" /><figcaption aria-hidden="true">Covariance can be seen better with a combined time plot while correlation with a scatterplot</figcaption>
+<img src="3_Correlation%20analysis%20and%20the%20autocorrelation%20function_insertimage_3.png" style="width:50.0%" alt="Covariance and scatterplot" /><figcaption aria-hidden="true">Covariance and scatterplot</figcaption>
 </figure>
 
 ## Autocorrelation
@@ -149,8 +136,8 @@ depend on the scale of the measurements in the variables.
 Autocorrelation means correlation analysis is done for a large number of
 variables in an efficient way. Lag 1 autocorrelation means the
 correlation of a stock prices between all consecutive days (today vs
-yesterday). It can be used to see if a time series is dependent on its
-past.
+yesterday, yesterday vs the-other-day,…). It can give us some
+information about whether a series is dependent on its past or not.
 
 ``` r
 # acf() gives the autocorrelation for each lag, plot can be set to F to get only the values
@@ -165,24 +152,24 @@ acf(EuStockMarkets[,1], lag.max = 500, plot = T)
 
 ## The autoregressive (AR) model
 
-AR model arguably the most widely used time series model. It is like a
-simple linear regression but each observation is regressed on the
+AR model is arguably the most widely used time series model. It is like
+a simple linear regression but each observation is regressed on the
 previous observation. This makes them a simple first order recursion
 processes by regressing today’s observation on yesterday’s observation.
-Additionally, WN and RW models are included in AR models as special case
-models.
+Additionally, WN and RW models are special cases of AR models.
+
+AR recursion:
 
 > Today = Slope \* Yesterday + Constant + Noise
 
-In R, we use with he mean centered version of the AR recursion.
+AR recursion, mean centered version (as used in R):
 
 > (Today - Mean) = Slope \* (Yesterday - Mean) + Noise
 
-> *Y*<sub>*t*</sub> − *μ* = *ϕ* \* (*Y*<sub>*t* − 1</sub> − *μ*) + *ϵ*<sub>*t*</sub>
+> (*Y*<sub>*t*</sub> − *μ*) = *ϕ* \* (*Y*<sub>*t* − 1</sub> − *μ*) + *ϵ*<sub>*t*</sub>
 
 *ϵ*<sub>*t*</sub>
-is the white noise (WN) with a mean zero (non-zero mean WN would be a
-RW).
+is the white noise (WN) with a mean zero.
 
 *ϕ*
 is the slope parameter valued between -1 and 1.
@@ -294,3 +281,17 @@ acf(RW)
 ![](3_Correlation-analysis-and-the-autocorrelation-function_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ## AR model estimation and forecasting
+
+We’ll use the US inflation data from 1950 to 1990.
+
+``` r
+par(mfrow = c(1,2))
+
+inflation <- as.ts(Ecdat::Mishkin[,1])
+
+ts.plot(inflation)
+
+acf(inflation)
+```
+
+![](3_Correlation-analysis-and-the-autocorrelation-function_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
