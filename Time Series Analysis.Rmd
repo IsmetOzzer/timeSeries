@@ -12,7 +12,6 @@ output:
 knitr::opts_chunk$set(warning = F, message = F)
 library(xts)
 library(dplyr)
-library(weatherData)
 library(ggplot2)
 ```
 
@@ -46,9 +45,9 @@ deltat(nile)    #time interval between observations in days (how many observatio
 We should tranform the data into an xts object
 
 ```{r}
-is.ts(London2013)
-london <- as.xts(x = London2013$Temperature,
-       order.by = lubridate::as_datetime(London2013$Time))
+is.ts(weatherData::London2013)
+london <- as.xts(x = weatherData::London2013$Temperature,
+       order.by = lubridate::as_datetime(weatherData::London2013$Time))
 
 periodicity(london)
 ```
@@ -77,9 +76,9 @@ Mean Temp of every month
 
 ```{r}
 plot(apply.monthly(london,
-              FUN = "mean"),
+                   FUN = "mean"),
      type = "s",
-     main = "month")
+     main = "Monthly mean temperature")
 ```
 
 OHLC Values
@@ -127,7 +126,7 @@ arima(WN_1,
       order = c(0,0,0))
 ```
 
-The value that is given as the blank row in under intercept is mean.  
+The value that is given as the blank row under intercept is mean.  
 s.e. is the strandard error.  
 sigma^2 is indicating the variance in the model. The estimated standard deviation is the square root of this value.
 

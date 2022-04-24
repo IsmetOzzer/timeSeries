@@ -18,13 +18,13 @@ library(xts)
 ```
 
 
-xts is an eXtensive Time Series.They have the main objects called "zoo" objects= A matrix object + a vector of times. This means an observation of the objects in the matrix in the times in that vector. 
+xts is an eXtensive Time Series.They have the main objects called "zoo" objects; A matrix object + a vector of times. They represent observations of the objects in the matrix for the times in that vector. 
 
 ![A matrix of objects are observed in that vector of times in index](Introducing xts and zoo objects_insertimage_1.png){width=30%}
 
 XTS = matrix + index
 
-Matrix of obsevations
+Matrix of observations
 
 ```{r matrix}
 x <- matrix(1:4, ncol=2, nrow = 2)
@@ -54,7 +54,7 @@ xts(x = NULL,            #an object containing the time series data
     order.by = index(x), #order by vector of times in increasing order of time
     frequency = NULL,    #
     unique = TRUE,       #force times to be unique
-    tzone = Sys.getenv("TZ"), #set the time zone
+    tzone = Sys.getenv("TZ") #set the time zone
     ) 
     ```
 
@@ -203,9 +203,9 @@ a + merge(b, index(a), fill = na.locf)
 
 ## Merging time series
 
-![Merge() function](Introducing xts and zoo objects_insertimage_2.png){width=50%}
+![Merge() function](Introducing xts and zoo objects_insertimage_2.png){width=30%}
 
-![Merge() function](Introducing xts and zoo objects_insertimage_3.png){width=50%}
+![Merge() function](Introducing xts and zoo objects_insertimage_3.png){width=30%}
 
 rbind() only excepts dates
 
@@ -231,7 +231,7 @@ zoo::na.locf(object,
 ```
 
 
-![z sütunundaki iki NA verisine z.1 sütunundaki düz locf ile NA'dan önceki 1, z.2 sütunundaki ters locf ile NA'dan sonraki 4 eklenmiş](Introducing xts and zoo objects_insertimage_5.png){width=50%}
+![z sütunundaki iki NA verisine z.1 sütunundaki düz locf ile NA'dan önceki 1, z.2 sütunundaki ters locf ile NA'dan sonraki 4 eklenmiş](Introducing xts and zoo objects_insertimage_5.png){width=30%}
 
 Diğer NA seçenekleri
 
@@ -253,7 +253,7 @@ Lag bir gün geriye almak (a day lagging from today )  demektir.
 
 Bugünün verisini dünün verisiyle karşılaştırmak için `lag()` operatörü kullanılır. Ne kadar geriye veya ileriye gidileceği `k` değeriyle belirtilir; negatif ise geri, pozitif ise ileri götürür. Birden fazla k değerini birleştirip o tarihlerin damgaları kıyaslanabilir (e.g., 0,1 ve 5 lag/leadleri).  
 
-![x lead (+1), x, x lag (-1)](Introducing xts and zoo objects_insertimage_6.png){width=%50}
+![x lead (+1), x, x lag (-1)](Introducing xts and zoo objects_insertimage_6.png){width=%30}
 
 R'ın kendi time series(ts) veya zoo verileri için de lag kavramları vardır ama bunlar XTS'e göre ters kodlanır; -1 ile bir ileri lead, 1 ile bir geri lag kodlanır. Bu yüzden ts veya zoo verisini XTS'e çevirdikten sonra ters kodla devam etmek gerekir.
 

@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Correlation analysis and the autocorrelation function
 
-Financial asset returns: Channges in price as a fraction of the initial price over a given time (e.g., a week)  
+Financial asset returns: Changes in price as a fraction of the initial price over a given time (e.g., a week)  
 
 Taking the log of a stock option shows us the percentage of increase/decrease in the returns. If the stock goes from 1 to 2, this is a %100 increase, while if it goes from 2 to 3, this increase is %50. In linear analyses, these two have just 1 unit of increase. With the log analyses, we can see the relative value of the returns, especially important for long term trend analyses (like years).
 
@@ -191,4 +191,153 @@ ts.plot(inflation)
 acf(inflation)
 ```
 
+```{r}
+# Fitting an AR model to the inflation data
+
+AR_inflation <- arima(inflation,
+                      order = c(1,  
+                                0,
+                                0))
+
+print(AR_inflation)
+```
+
+The slope $$\phi$$ is 0.596, the mean $$\mu$$ is 3.974, and the sigma^2 estimate (the innovation variance) is 9.713.
+
+AR fitted values:
+
+The prediction estimates of today given yesterday
+
+> $$\hat{Today} = \hat{Mean} + \hat{Slope} * (Yesterday - \hat{Mean})$$
+
+> $$\hat{Y_{t}} = \hat{\mu} + \hat{\phi} * (Y_{t-1} - \hat{\mu})$$
+
+Residuals of the fitted AR model:
+
+Today (the observed values) - the estimates of today equals to error in the model's estimate. The residuals in the AR model are estimates of a WN process.
+
+> $$\hat{\epsilon{t}} = Y_{t} - \hat{Y_{t}}$$
+
+```{r}
+# We find the residuals by applying the above formula, which is observed - fitted values
+
+AR_inflation_residuals <- inflation - residuals(AR_inflation)
+
+
+ts.plot(inflation)
+points(AR_inflation_residuals, 
+       tpye = "l",
+       col = "red",
+       lty = 2)
+```
+
+We see that the AR model explains the variation observed in the inflation time series, meaning it encompasses the residuals within the model variance.  
+
+To predict one data point forward from the AR model, we can use the `predict()` function.
+
+```{r}
+predicted_infation <- predict(AR_inflation)
+predicted_infation$pred[1]
+
+# Predict 6 months ahead
+predict(AR_inflation, n.ahead = 6)$pred
+# The SE
+predict(AR_inflation, n.ahead = 6)$se
+```
+
+```{r}
+# Run to plot the Nile series plus the forecast and 95% prediction intervals
+AR_fit <- arima(Nile, order  = c(1,0,0))
+ts.plot(Nile, xlim = c(1871, 1980))
+AR_forecast <- predict(AR_fit, n.ahead = 10)$pred
+AR_forecast_se <- predict(AR_fit, n.ahead = 10)$se
+points(AR_forecast, type = "l", col = 2)
+points(AR_forecast - 2*AR_forecast_se, type = "l", col = 2, lty = 2)
+points(AR_forecast + 2*AR_forecast_se, type = "l", col = 2, lty = 2)
+```
+
+# Moving Average
+
+## The simple moving average model
+
+Time series model used to account for very short-run autocorrelation, which is a model with autocorrelation constructed from white noise (error)
+
+Moving Average: The average (mean) of the current and the previous white noise
+
+> $$Today = Mean + Noise + Slope * (Yesterday's Noise)$$
+
+> $$Y_{t} = \mu + \epsilon_{t} + \theta * (\epsilon_{t-1})$$
+
+* $$\mu$$ is the mean
+* $$\theta$$ is the slope (the MA coefficient with a value between -1 and 1)
+* $$\epsilon_{t}$$ is a mean zero WN process
+* $$\sigma^2$$ is the WN variance
+
+If the slope $$\theta = 0$$, then the model is simply a white noise process $$Y_{t} = \mu + \epsilon_{t}$$.  
+
+If the slope $$\theta \neq 0$$, then today's model estimate depends on the current noise $$\epsilon_{t}$$ and the previous noise $$\epsilon_{t-1}$$, which makes it autocorrelated.  
+
+Large values of the slope $$\theta$$ lead to greater autocorrelation
+Negative values of the slope $$\theta$$ result in oscillatory time series. 
+
+![(A and B show persistance in level, meaning each obs is close to its neighbors, but larger theta B has greater persistance (C) MA series with negative MA coefficients (theta) show alternating/oscillatory patterns (D) No autocorrelation, meaning it is just a WN)](3_Correlation analysis and the autocorrelation function_insertimage_7.png){width=50%}  
+
+The slope $$\theta$$ determines the strength of the autocorrelation but only for one period, which means just for the lag 1. The polarity of the MA coefficient $$\theta$$ (i.e., positive or negative) determines this lag 1 autocorrelation's positiveness or negativeness. 
+
+![](3_Correlation analysis and the autocorrelation function_insertimage_8.png)
+
+## Simulating a simple moving average model
+
+```{r}
+MA_neg5 <- arima.sim(model = list(ma = -.5),
+                     n = 100)
+
+MA_5 <- arima.sim(model = list(ma = .5),
+                     n = 100)
+
+MA_9 <- arima.sim(model = list(ma = .9),
+                     n = 100)
+
+plot.ts(cbind(MA_neg5, MA_5, MA_9))
+```
+
+Looking at the autocorrelation values:
+
+```{r}
+par(mfrow = c(2,2))
+
+acf(MA_neg5)
+acf(MA_5)
+acf(MA_9)
+```
+
+## Compare AR and MA models
+
+AR and MA models both have the mean zero WN $$\epsilon$$ (error) parameter.
+
+In the MA model, today's observation is regressed on yesterday's noise $$\epsilon_{t-1}$$
+
+Today = Mean + Noise + Slope * Yesterday's Noise
+
+> $$Y_{t} = \mu + \epsilon_{t} + \theta * \epsilon_{t-1}$$
+
+MA model has autocorrelation only at lag 1
+
+In the AR model, today's observation is regressed on yesterday's observation $$Y_{t-1}$$.
+
+(Today - Mean) = Slope * (Yesterday - Mean) + Noise
+
+> $$(Y - \mu) = \phi * (Y_{t-1} - \mu) + \epsilon_{t}$$
+
+AR model has autocorrelation at many levels.
+
+![](3_Correlation analysis and the autocorrelation function_insertimage_11.png)
+
+The best way to assess the fit of AR or MA models to a time series, the information criteria like AIC `AIC(model)` and BIC `BIC(model)` is used.
+
+![A shows short-run dependence but reverts quickly to the mean, so it must be the MA model. Series B and C are consistent with AR and RW, respectively. Series D does not show any clear patterns, so it must be the WN model.](3_Correlation analysis and the autocorrelation function_insertimage_10.png){width=50%}  
+
+RW and AR models typically show large autocorrelation for many lags, but the ACF of an AR delays to zero more quickly than that of the RW. The MA ACF should have approximately zero autocorrelation at all lags greater than 1. The WN ACF should have approximately zero autocorrelation at all lags.
+
+![A shows autocorrelation for the first lag only, which is consistent with the expectations of the MA model. Plot B shows dissipating autocorrelation across several lags, consistent with the AR model. Plot C is consistent with a RW model with considerable autocorrelation for many lags. Finally. Plot D shows virtually no autocorrelation with any lags, consistent with a WN model](3_Correlation analysis and the autocorrelation function_insertimage_12.png){width=50%}
 
