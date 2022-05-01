@@ -9,17 +9,18 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(astsa)
+library(xts)
 ```
 
 # 
 
-In regression, a dependent variable of Y is regressed by an indepdendent variable X. A curcial assumption in regression is that errors are independent, normal, and homoscedestic. In other words, errors are white noise.
+In regression, a dependent variable of Y is regressed by an indepdendent variable X. A crucial assumption in regression is that errors are independent, normal, and homoscedastic. In other words, errors are white noise.
 
 Regression:
 
 > $$Y_{t} = \beta * X_{t} + \epsilon_{t}$$
 
-Time series data are autocorrelated (AR models), meaning yesterday's data (independent variable) is regressed to get today's forecast (dependent variable). 
+Time series data are autoregressed (AR models), meaning yesterday's data (independent variable) is regressed to get today's forecast (dependent variable). 
 
 The AR model:
 
@@ -27,7 +28,8 @@ Today = slope * (yesterday's data) + error
 
 > $$Y_{t} = \phi * Y_{t-1} + \epsilon_{t}$$
 
-Time series data are correlated, meaning yesterday's data is correlated with today's data (and correlation for different lag timestamps will be the same throughout all of the series). However, assuming that the errors are not correlated leads to bad forecasts. One solution to the problem of errors being not correlated is to use the moving average (MA) for the errors. 
+Time series data are correlated, meaning yesterday's data is correlated with today's data (and correlation for different lag timestamps will be the same throughout all of the series).  
+However, assuming that the errors are not correlated leads to bad forecasts. One solution to the problem of errors being not correlated is to use the moving average (MA) for the errors. 
 
 ![Autocorrelation: correlation for the temperature at lag 1 (1 month is positive) and lag 6 (6 months is negative due to summer and winter seasons)](ARIMA models in R_insertimage_2.png)
 
@@ -41,7 +43,7 @@ Putting these two together gives us the ARMA model: the model is autoregression 
 
 ## Stationarity & Non-stationarity
 
-Staionarity: The mean is constat over time (no trend/drift) and correlation is stable over time (no increase or decrease of correlation among variables at different lags, e.g., correlation at lag 2 for all 2 data points will be ~ same).
+Stationarity: The mean is constant over time (no trend/drift) and correlation is stable over time (no increase or decrease of correlation among variables at different lags, e.g., correlation at lag 2 for all 2 data points will be ~ same).
 
 ![](ARIMA models in R_insertimage_1.png){width=50%}
 
@@ -49,7 +51,7 @@ Staionarity: The mean is constat over time (no trend/drift) and correlation is s
 
 The deviance in the global temperature is a good example of the RW models. The value (the temperature) of the series at time t $$X_{t}$$ is t-1 $$X_{t-1}$$ plus a completely random movement $$\epsilon_{t}$$ (this randomness gives the name random to the random walk). 
 
-![The temperature is non-staionary with a trend but the differencing with lag 1 and getting a RW makes it stationary](ARIMA models in R_insertimage_3.png)
+![The temperature is non-staionary with a trend but the differencing with lag 1 and getting a RW makes it stationary (a WN process)](ARIMA models in R_insertimage_3.png)
 
 Non-stationarity: If there is a trend and heteroscasdicity (the variance in the data is differing at different times), the series in non-stationary. 
 
@@ -57,12 +59,16 @@ Non-stationarity: If there is a trend and heteroscasdicity (the variance in the 
 
 ![Becoming stationart after differencing](ARIMA models in R_insertimage_6.png)
 
+#### Dealing with trend and heteroscasdicity
+
 To make non-stationary data stationary: 
 
-* Take the log (stabilze the variance)
+* Take the log (stabilize the variance)
 * Difference the log (de-trend with lags)
 
 ![Non-stationary to stationary](ARIMA models in R_insertimage_4.png)
+
+Dealing with the trend in the global temperature data:
 
 ```{r}
 par(mfrow = c(2,1))
@@ -71,10 +77,36 @@ plot(globtemp)
 plot(diff(globtemp))
 ```
 
+Dealing with the seasonality in the cardiovascular mortality rates:
+
 ```{r}
 par(mfrow = c(2,1))
 
 plot(cmort)
 plot(diff(cmort))
+```
+
+Dealing with the trend of the Dow Jones Industrial Average stock daily closing prices:
+
+```{r}
+par(mfrow = c(2,1))
+plot.xts(djia[,3])
+plot.xts(diff(log(djia[,3]))) 
+```
+
+Any stationary time series can be written as a linear combination of white noise, just as ARMA models can.
+
+Generating MA model:
+
+$$X_{t} = W_{t} + 0.9 * W_{t-1}$$
+
+```{r}
+MA <- arima.sim(list(order = c(0,  #AutoRegression
+                               0,  #Integration
+                               1), #Moving Average
+                     ma = .9),
+                n = 100)
+
+plot(MA)
 ```
 
